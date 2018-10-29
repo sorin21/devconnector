@@ -2,7 +2,10 @@ const express = require('express');
 const router = express.Router();
 const gravatar = require('gravatar');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { secretOrKey } = require('../../config/keys');
 
+// Load user model
 const User = require('../../models/User');
 
 // @route  GET api api/users/test
@@ -23,7 +26,7 @@ router.post('/register', (req, res) => {
       }
       const avatar = gravatar.url(req.body.email, {
         s: '200', // Size
-        r: 'pg', //Rating
+        r: 'g', //Rating
         d: 'mm', // Default
       })
 
@@ -37,13 +40,14 @@ router.post('/register', (req, res) => {
 
       // generate a salt with bcrypt
       bcrypt.genSalt(10, (error, salt) => {
+        // create the hash
         bcrypt.hash(newUser.password, salt, (err, hash) => {
           if (err) throw err;
           // set the new user to hash
           newUser.password = hash;
           // save it ( mongoose save )
           newUser.save()
-            // get the response wiht the user
+            // get the response wirh the user
             .then(user => res.json(user))
             .catch(err => console.log('Error from hash', err))
         })
@@ -53,5 +57,55 @@ router.post('/register', (req, res) => {
       console.log('There is an error on check email, users.js: ', error)
     });
 });
+
+
+// @route  GET api api/users/login
+// @desc   Login user / Returning JWT token
+// @access Public
+router.post('/login', (req, res) => {
+  // email and pass from what user tyes
+  const email = req.body.email;
+  const password = req.body.password;
+
+  // Find the user by email
+  User.findOne({ email })
+    .then((user) => {
+      // Check if ther is a user
+      if (!user) {
+        return res.status(404).json({ email: 'User not found' })
+      }
+
+      // Check password from above against 
+      // the user.password, hashed one from db
+      bcrypt.compare(password, user.password)
+        .then((isMatch) => {
+          // if is matched user passed
+          if (isMatch) {
+            // user Matched
+            // Create JWT payload
+            // payload is what we want to include in token
+            const payload = { id: user.id, name: user.name, avatar: user.avatar };
+
+            // Sign Token
+            // 3600 second is 1h
+            jwt.sign(
+              payload,
+              secretOrKey,
+              { expiresIn: 3600 },
+              (err, token) => {
+                res.json({
+                  success: true,
+                  token: 'Bearer ' + token
+                })
+              }
+            );
+
+            // return res.json({ msg: 'Success' })
+          } else {
+            return res.status(400).json({ password: 'Password incorrect' });
+          }
+        })
+    })
+})
 
 module.exports = router;
