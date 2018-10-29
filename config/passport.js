@@ -10,18 +10,26 @@ opts.secretOrKey = secretOrKey;
 
 const passport = (passport) => {
   passport.use(new JwtStrategy(opts, (jwt_payload, done) => {
-    User.findOne({ id: jwt_payload.sub }, (err, user) => {
-      if (err) {
-        return done(err, false);
-      }
-      if (user) {
-        return done(null, user);
-      } else {
+    // console.log(jwt_payload)
+    // console.log(done)
+    // Get the User that is being send to jwt_payload
+    User.findById(jwt_payload.id )
+      .then((user) => {
+        if (user) {
+          // return the user
+          // null is the error
+          return done(null, user);
+        }
+        // if the user is not found
+        // null for error
+        // false for user
         return done(null, false);
-        // or you could create a new account
-      }
-    });
-  }))
+      })
+      .catch(error => {
+        console.log(error);
+        return done(error);
+      });
+  }));
 }
 
 module.exports = passport;
