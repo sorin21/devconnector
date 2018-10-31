@@ -9,11 +9,12 @@ opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = secretOrKey;
 
 const passport = (passport) => {
+  // to protect the routes
   passport.use(new JwtStrategy(opts, (jwt_payload, done) => {
     // console.log(jwt_payload)
     // console.log(done)
     // Get the User that is being send to jwt_payload
-    User.findById(jwt_payload.id )
+    User.findById(jwt_payload.id)
       .then((user) => {
         if (user) {
           // return the user
