@@ -4,6 +4,9 @@ const mongoose = require('mongoose');
 // used for protected routes
 const passport = require('passport');
 
+// Load Validation
+const validateProfileInput = require('../../validation/profile');
+
 // Load Profile Model
 const Profile = require('../../models/Profile');
 // Load User Model
@@ -22,6 +25,8 @@ router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => 
 
   // req.user will have all the user info
   Profile.findOne({ user: req.user.id })
+    // populate from user
+    .populate('user', ['name', 'avatar'])
     .then(profile => {
       if (!profile) {
         errors.noprofile = 'There is no profile for this user'
@@ -37,15 +42,25 @@ router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => 
 // @desc   Create or Edit user profile
 // @access Private
 router.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
+  const { errors, isValid } = validateProfileInput(req.body);
+
+  // Check Validation
+  if (!isValid) {
+    // Return any errros with 400 status
+    return res.status(400).json(errors);
+  }
+
   // get fields
   const profileFields = {};
-  profile.user = req.user.id;
+  profileFields.user = req.user.id;
 
   // Check if the handle is send by the form
   if (req.body.handle) profileFields.handle = req.body.handle;
   if (req.body.company) profileFields.company = req.body.company;
   if (req.body.website) profileFields.website = req.body.website;
   if (req.body.location) profileFields.location = req.body.location;
+  if (req.body.status) profileFields.status = req.body.status;
+
   // Skills - split into array
   if (typeof req.body.skills !== 'undefined') {
     profileFields.skills = req.body.skills.split(',');

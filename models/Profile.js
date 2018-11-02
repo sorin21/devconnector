@@ -6,6 +6,7 @@ const ProfileSchema = new Schema({
   user: {
     // associate the user by it's id
     type: Schema.Types.ObjectId,
+    // able to populate fields from users
     ref: 'users'
   },
   handle: {
@@ -54,7 +55,7 @@ const ProfileSchema = new Schema({
         required: true
       },
       to: {
-        type: String,
+        type: Date
       },
       current: {
         type: Boolean,
@@ -75,7 +76,7 @@ const ProfileSchema = new Schema({
         type: String,
         required: true
       },
-      fieldofstydy: {
+      fieldofstudy: {
         type: String,
         required: true
       },
@@ -84,7 +85,7 @@ const ProfileSchema = new Schema({
         required: true
       },
       to: {
-        type: String,
+        type: Date
       },
       current: {
         type: Boolean,
