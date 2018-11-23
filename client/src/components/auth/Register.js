@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import axios from 'axios'
 
 class Register extends Component {
   constructor(props) {
@@ -10,9 +11,6 @@ class Register extends Component {
       password2: '',
       errors: {}
     }
-
-    this.onChange = this.onChange.bind(this);
-    this.onSubmit = this.onSubmit.bind(this);
   }
 
   onChange = (event) => {
@@ -29,7 +27,9 @@ class Register extends Component {
       password2: this.state.password2
     }
 
-    console.log(newUser)
+    axios.post('/api/users/register', newUser)
+      .then(res => console.log(res.data))
+      .catch(error => console.log('There was an error on register: ', error.response.data))
   }
 
   render() {
