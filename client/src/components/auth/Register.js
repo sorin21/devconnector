@@ -1,7 +1,10 @@
 import React, { Component } from 'react'
-import axios from 'axios';
-
+import { connect } from 'react-redux'
+import PropTypes from 'prop-types'
+import { withRouter } from 'react-router-dom'
 import classnames from 'classnames';
+
+import { registerUser, registerMyUser } from '../../actions/authActions';
 
 class Register extends Component {
   constructor(props) {
@@ -12,6 +15,14 @@ class Register extends Component {
       password: '',
       password2: '',
       errors: {}
+    }
+  }
+
+  //WARNING! To be deprecated in React v17. Use new lifecycle static getDerivedStateFromProps instead.
+  componentWillReceiveProps(nextProps) {
+    // test for errors prop
+    if (nextProps.errors) {
+      this.setState({ errors: nextProps.errors });
     }
   }
 
@@ -29,15 +40,19 @@ class Register extends Component {
       password2: this.state.password2
     }
 
-    axios.post('/api/users/register', newUser)
-      .then(res => console.log(res.data))
-      .catch(error => this.setState({ errors: error.response.data }));
+    this.props.registerUser(newUser, this.props.history);
+    this.props.registerMyUser(newUser);
   }
 
   render() {
     const { errors } = this.state;
+
+    // distructing from mapStateToProps
+    // auth comes from root reducer, the index
+    // const { user } = this.props.auth;
     return (
       <div className="register">
+        {/* {user ? user.name : null} */}
         <div className="container">
           <div className="row">
             <div className="col-md-8 m-auto">
@@ -102,4 +117,20 @@ class Register extends Component {
   }
 }
 
-export default Register;
+const mapStateToProps = (state) => {
+  return {
+    auth: state.auth,
+    errors: state.errors
+  }
+}
+
+Register.propTypes = {
+  registerUser: PropTypes.func.isRequired,
+  registerMyUser: PropTypes.func.isRequired,
+  auth: PropTypes.object.isRequired,
+  errors: PropTypes.object.isRequired
+}
+
+// {} here we map our actions
+// withRouter can get access to the history object's properties and the closest <Route>'s match
+export default connect(mapStateToProps, { registerUser, registerMyUser })(withRouter(Register));
