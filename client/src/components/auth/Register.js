@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import { withRouter } from 'react-router-dom'
 import classnames from 'classnames';
 
-import { registerUser, registerMyUser } from '../../actions/authActions';
+import { registerUser } from '../../actions/authActions';
 
 class Register extends Component {
   constructor(props) {
@@ -19,10 +19,23 @@ class Register extends Component {
   }
 
   //WARNING! To be deprecated in React v17. Use new lifecycle static getDerivedStateFromProps instead.
-  componentWillReceiveProps(nextProps) {
-    // test for errors prop
+  // componentWillReceiveProps(nextProps) {
+  //   // test for errors prop
+  //   if (nextProps.errors) {
+  //     this.setState({ errors: nextProps.errors });
+  //   }
+  // }
+
+  static getDerivedStateFromProps(nextProps, prevState) {
     if (nextProps.errors) {
-      this.setState({ errors: nextProps.errors });
+      return { errors: nextProps.errors };
+    }
+    return null
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.errors !== this.props.errors) {
+      this.setState({ errors: this.props.errors })
     }
   }
 
@@ -41,7 +54,7 @@ class Register extends Component {
     }
 
     this.props.registerUser(newUser, this.props.history);
-    this.props.registerMyUser(newUser);
+    // this.props.registerMyUser(newUser);
   }
 
   render() {
@@ -126,11 +139,11 @@ const mapStateToProps = (state) => {
 
 Register.propTypes = {
   registerUser: PropTypes.func.isRequired,
-  registerMyUser: PropTypes.func.isRequired,
+  // registerMyUser: PropTypes.func.isRequired,
   auth: PropTypes.object.isRequired,
   errors: PropTypes.object.isRequired
 }
 
 // {} here we map our actions
 // withRouter can get access to the history object's properties and the closest <Route>'s match
-export default connect(mapStateToProps, { registerUser, registerMyUser })(withRouter(Register));
+export default connect(mapStateToProps, { registerUser })(withRouter(Register));
