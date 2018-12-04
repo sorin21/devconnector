@@ -1,6 +1,5 @@
 import { SET_CURRENT_USER } from '../actions/types'
 import isEmmpty from '../validation/is-empty'
-import { userInfo } from 'os';
 
 const initialState = {
   isAuthenticated: false,
